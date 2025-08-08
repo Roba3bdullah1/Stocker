@@ -1,7 +1,11 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
-{% block title %}Products{% endblock %}
+{% block title %}Suppliers{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid dashboard-container">
@@ -35,21 +39,21 @@
     </ul>
   </nav>
 
-
-  <main class="main-content">
-    <h2 class="mb-4 fw-semibold">Products List</h2>
+  <main class="main-content flex-grow-1 p-4">
+    <h2 class="mb-4 fw-semibold">Suppliers List</h2>
 
     <div class="mb-3 d-flex justify-content-between align-items-center">
-      <a href="{% url 'product:add_product_view' %}" class="btn btn-primary">Add New Product</a>
+      <a href="{% url 'product:add_supplier_view' %}" class="btn btn-primary">Add New Supplier</a>
+
       <form method="GET" class="d-flex" role="search">
         <input
           class="form-control me-2"
           type="search"
           name="q"
-          placeholder="Search products..."
+          placeholder="Search suppliers..."
           value="{{ request.GET.q|default:'' }}"
           aria-label="Search"
-        >
+        />
         <button class="btn btn-outline-secondary" type="submit">Search</button>
       </form>
     </div>
@@ -59,40 +63,36 @@
         <tr>
           <th>#</th>
           <th>Name</th>
-          <th>Category</th>
-          <th>Supplier</th>
-          <th>Price</th>
-          <th>Status</th>
+          <th>Email</th>
+          <th>Phone</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        {% for product in products %}
+        {% for supplier in suppliers %}
         <tr>
           <td>{{ forloop.counter }}</td>
-          <td>{{ product.name }}</td>
-          <td>{{ product.category.name }}</td>
-          <td>{{ product.supplier.name }}</td>
-          <td>${{ product.price }}</td>
+          <td>{{ supplier.name }}</td>
+          <td>{{ supplier.email }}</td>
+          <td>{{ supplier.phone }}</td>
           <td>
-            {% if product.status == 'available' %}
-              <span class="badge bg-success">Available</span>
-            {% elif product.status == 'out_of_stock' %}
-              <span class="badge bg-warning text-dark">Out of Stock</span>
-            {% elif product.status == 'discontinued' %}
-              <span class="badge bg-danger">Discontinued</span>
-            {% else %}
-              <span class="badge bg-secondary">Unknown</span>
-            {% endif %}
-          </td>
-          <td>
-            <a href="{% url 'product:edit_product' product.id %}" class="btn btn-sm btn-outline-primary me-1">Edit</a>
-            <a href="{% url 'product:delete_product' product.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?');">Delete</a>
+            <a href="{% url 'product:supplier_detail_view' supplier.id %}" class="btn btn-sm btn-outline-info me-1">Details</a>
+            <a href="{% url 'product:update_supplier_view' supplier.id %}" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-danger"
+              data-bs-toggle="modal"
+              data-bs-target="#deleteSupplierModal"
+              data-supplier-id="{{ supplier.id }}"
+              data-supplier-name="{{ supplier.name }}"
+            >
+              Delete
+            </button>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="7" class="text-center text-muted">No products found.</td>
+          <td colspan="5" class="text-center text-muted">No suppliers found.</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -129,8 +129,60 @@
     {% endif %}
   </main>
 </div>
+
+
+<div
+  class="modal fade"
+  id="deleteSupplierModal"
+  tabindex="-1"
+  aria-labelledby="deleteSupplierModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <form method="POST" id="deleteSupplierForm">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteSupplierModalLabel">Delete Supplier</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete <strong id="supplierName"></strong>?
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
 {% endblock %}
 
-{% block extra_css %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+{% block extra_js %}
+<script>
+  const deleteSupplierModal = document.getElementById('deleteSupplierModal');
+  const deleteSupplierForm = document.getElementById('deleteSupplierForm');
+  const supplierNameSpan = document.getElementById('supplierName');
+
+  deleteSupplierModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    const supplierId = button.getAttribute('data-supplier-id');
+    const supplierName = button.getAttribute('data-supplier-name');
+
+    supplierNameSpan.textContent = supplierName;
+    deleteSupplierForm.action = "{% url 'product:delete_supplier_view' 0 %}".replace('0', supplierId);
+  });
+</script>
 {% endblock %}

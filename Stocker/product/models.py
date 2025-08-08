@@ -23,16 +23,21 @@ class Supplier(models.Model):
 
 
 class Product(models.Model):
+    STATUS_CHOICES = [
+        ('available', 'Available'),      
+        ('out_of_stock', 'Out of Stock'),
+        ('discontinued', 'Discontinued'),
+    ]
+
     name = models.CharField(max_length=150)
     description = models.TextField(blank=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE) 
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
+    supplier = models.ForeignKey('Supplier', on_delete=models.CASCADE) 
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to="images/", default="images/default.jpg")
     created_at = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
 
-    def __str__(self):
-        return self.name
 
 
 class Stock(models.Model):

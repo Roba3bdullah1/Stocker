@@ -1,7 +1,15 @@
+
+
 {% extends 'main/base.html' %}
 {% load static %}
 
-{% block title %}Add Product{% endblock %}
+{% block title %}
+  {% if form.instance.pk %}
+    Update Category
+  {% else %}
+    Add Category
+  {% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid dashboard-container">
@@ -34,11 +42,19 @@
       </li>
     </ul>
   </nav>
-  <!-- Main Content -->
-<main class="main-content flex-grow-1 p-4">
-    <h2 class="mb-4 fw-semibold">Add New Product</h2>
 
-    <form method="POST" enctype="multipart/form-data" action="{% url 'product:add_product_view' %}">
+
+
+  <main class="main-content flex-grow-1 p-4">
+    <h2 class="mb-4 fw-semibold">
+      {% if form.instance.pk %}
+        Update Supplier
+      {% else %}
+        Add New Supplier
+      {% endif %}
+    </h2>
+
+    <form method="POST" enctype="multipart/form-data" action="">
       {% csrf_token %}
       {{ form.non_field_errors }}
 
@@ -46,16 +62,23 @@
         <div class="mb-3">
           <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
           {{ field }}
+          {% if field.help_text %}
+            <small class="form-text text-muted">{{ field.help_text }}</small>
+          {% endif %}
           {% if field.errors %}
             <div class="text-danger small">{{ field.errors }}</div>
           {% endif %}
         </div>
       {% endfor %}
 
-      <button type="submit" class="btn btn-primary">Add Product</button>
+      <button type="submit" class="btn btn-primary">
+        {% if form.instance.pk %}
+          Update Supplier
+        {% else %}
+          Add Supplier
+        {% endif %}
+      </button>
     </form>
   </main>
-
-
 </div>
 {% endblock %}

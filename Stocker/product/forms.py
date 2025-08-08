@@ -2,20 +2,89 @@ from django import forms
 from .models import Product
 from .models import Supplier
 from .models import Category
+from .models import Stock
+
+
 
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'description', 'category', 'supplier', 'price', 'image']
-
-
+        fields = ['name', 'description', 'category', 'supplier', 'price', 'image', 'status']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter product name'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter product description',
+                'rows': 3,
+            }),
+            'category': forms.Select(attrs={
+                'class': 'form-select',
+            }),
+            'supplier': forms.Select(attrs={
+                'class': 'form-select',
+            }),
+            'price': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter price',
+                'step': '0.01',
+            }),
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+            }),
+            'status': forms.Select(attrs={
+                'class': 'form-select',
+            }),
+        }
 
 class SupplierForm(forms.ModelForm):
     class Meta:
         model = Supplier
-        fields = ['name','logo', 'email','website', 'phone', 'address']
+        fields = ['name', 'logo', 'email', 'website', 'phone', 'address']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter supplier name'
+            }),
+            'logo': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter email address',
+            }),
+            'website': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter website URL',
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter phone number',
+            }),
+            'address': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Enter address',
+            }),
+        }
 
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = ['name', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter category name'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter description'}),
+        }
+
+
+    class StockForm(forms.ModelForm):
+     class Meta:
+        model = Stock
+        fields = ['quantity', 'expiry_date']
+        widgets = {
+            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+            'expiry_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        }

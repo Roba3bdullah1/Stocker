@@ -6,6 +6,10 @@ from .models import Supplier
 from .forms import SupplierForm
 from .models import Category
 from .forms import CategoryForm
+from django.core.paginator import Paginator
+from django.db.models import Q
+
+
 
 
 def add_product_view(request: HttpRequest):
@@ -13,10 +17,10 @@ def add_product_view(request: HttpRequest):
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect('products_list_view')
+            return redirect('product:products_list_view')
     else:
         form = ProductForm()
-    return render(request, 'product/product_form.html', {'form': form})
+    return render(request, 'product/add_product.html', {'form': form})
 
 
 def update_product_view(request:HttpRequest,pk):
@@ -25,7 +29,7 @@ def update_product_view(request:HttpRequest,pk):
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
-            return redirect('products_list_view')
+            return redirect('product:products_list_view')
     else:
         form = ProductForm(instance=product)
     return render(request, 'product/update_product.html', {'form': form})
@@ -55,11 +59,23 @@ def product_detail_view(request:HttpRequest,pk):
 
 
 
-def supplier_list_view(request:HttpRequest):
+def suppliers_list_view(request):
+    query = request.GET.get('q', '')
     suppliers = Supplier.objects.all()
-    return render(request, 'product/supplier_list.html', {'suppliers': suppliers})
-
-
+    if query:
+        suppliers = suppliers.filter(
+            Q(name__icontains=query) | Q(email__icontains=query) | Q(phone__icontains=query)
+        )
+    paginator = Paginator(suppliers, 10)  # 10 لكل صفحة
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'suppliers': page_obj.object_list,
+        'is_paginated': page_obj.has_other_pages(),
+        'page_obj': page_obj,
+        'paginator': paginator,
+    }
+    return render(request, 'product/suppliers_list.html', context)
 
 
 def add_supplier_view(request:HttpRequest):
@@ -99,9 +115,21 @@ def delete_supplier_view(request:HttpRequest, pk):
 
 
 
-def category_list_view(request:HttpRequest):
+def categories_list_view(request):
+    query = request.GET.get('q', '')
     categories = Category.objects.all()
-    return render(request, 'product/category_list.html', {'categories': categories})
+    if query:
+        categories = categories.filter(Q(name__icontains=query) | Q(description__icontains=query))
+    paginator = Paginator(categories, 10) 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'categories': page_obj.object_list,
+        'is_paginated': page_obj.has_other_pages(),
+        'page_obj': page_obj,
+        'paginator': paginator,
+    }
+    return render(request, 'product/category_list.html', context)
 
 
 def add_category_view(request:HttpRequest):
@@ -133,3 +161,23 @@ def delete_category_view(request:HttpRequest, pk):
         category.delete()
         return redirect('product:category_list_view')
     return render(request, 'product/category_confirm_delete.html', {'category': category})
+
+
+
+
+def stock_update_view(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    stock, created = Stock.objects.get_or_create(product=product)
+
+    if request.method == 'POST':
+        form = StockForm(request.POST, instance=stock)
+        if form.is_valid():
+            form.save()
+            return redirect('product:product_detail_view', pk=product.id)
+    else:
+        form = StockForm(instance=stock)
+
+    return render(request, 'product/stock_form.html', {
+        'form': form,
+        'product': product,
+    })
