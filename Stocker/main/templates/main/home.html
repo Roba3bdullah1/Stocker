@@ -1,17 +1,21 @@
-
-{% extends "main/base.html" %}
-{% block title %}Home - Inventory Plus{% endblock %}
+{% extends 'main/base.html' %}
+{% load static %}
+{% block title %}Home - ScentStock{% endblock %}
 
 {% block content %}
-<div class="text-center mt-5">
-    <h1>Welcome to Inventory Plus</h1>
-    <p class="lead">Manage your products, stock, and suppliers efficiently.</p>
+<div class="d-flex justify-content-center align-items-center flex-column text-center" style="min-height: 85vh;">
+  <h1>Welcome to ScentStock</h1>
+  <p class="lead">Effortlessly manage your perfume inventory, suppliers, and stock levels.</p>
 
-    {% if not request.user.is_authenticated %}
-        <a href="{% url 'main:login_view' %}" class="btn btn-primary m-2">Login</a>
-        <a href="{% url 'main:signup_view' %}" class="btn btn-outline-secondary m-2">Sign Up</a>
-    {% elif request.user.is_superuser %}
-        <a href="{% url 'main:dashboard_view' %}" class="btn btn-success m-2">Go to Dashboard</a>
-    {% endif %}
+  {% if not request.user.is_authenticated %}
+    <div class="d-flex justify-content-center gap-2">
+      <a href="{% url 'main:login_view' %}" class="btn btn-primary rounded-3">Login</a>
+      <a href="{% url 'main:signup_view' %}" class="btn btn-outline-secondary rounded-3">Sign Up</a>
+    </div>
+  {% elif request.user.is_superuser %}
+    <div class="d-flex justify-content-center">
+      <a href="{% url 'main:dashboard_view' %}" class="btn btn-success rounded-3">Go to Dashboard</a>
+    </div>
+  {% endif %}
 </div>
 {% endblock %}

@@ -2,14 +2,11 @@ from django import forms
 from .models import Product
 from .models import Supplier
 from .models import Category
-from .models import Stock
-
-
 
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'description', 'category', 'supplier', 'price', 'image', 'status']
+        fields = ['name', 'description', 'category', 'supplier', 'price', 'image', 'status', 'stock_quantity', 'expiry_date']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -36,6 +33,15 @@ class ProductForm(forms.ModelForm):
             }),
             'status': forms.Select(attrs={
                 'class': 'form-select',
+            }),
+            'stock_quantity': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter stock quantity',
+                'min': '0',
+            }),
+            'expiry_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
             }),
         }
 
@@ -79,12 +85,3 @@ class CategoryForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter description'}),
         }
 
-
-    class StockForm(forms.ModelForm):
-     class Meta:
-        model = Stock
-        fields = ['quantity', 'expiry_date']
-        widgets = {
-            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
-            'expiry_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-        }

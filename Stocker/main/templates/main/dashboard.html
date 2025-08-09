@@ -3,9 +3,13 @@
 
 {% block title %}Dashboard{% endblock %}
 
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid dashboard-container">
-  <nav class="sidebar text-white rounded-3">
+<div class="container-fluid dashboard-container d-flex">
+  <nav class="sidebar text-white rounded-3 me-4" style="min-width: 220px;">
     <ul class="nav nav-pills flex-column gap-2">
       <li class="nav-item">
         <a href="{% url 'product:products_list_view' %}" class="nav-link text-white rounded-3 px-3 py-2">
@@ -23,7 +27,7 @@
         </a>
       </li>
       <li class="nav-item">
-        <a href="#" class="nav-link text-white rounded-3 px-3 py-2">
+        <a href="{% url 'product:stock_management_view' %}" class="nav-link text-white rounded-3 px-3 py-2">
           <i class="bi bi-bar-chart-fill me-2"></i> Stock
         </a>
       </li>
@@ -35,7 +39,7 @@
     </ul>
   </nav>
 
-  <main class="main-content">
+  <main class="main-content flex-grow-1">
     <h2 class="mb-4 fw-semibold">Dashboard Overview</h2>
 
     <div class="row g-4 mb-5">
@@ -71,8 +75,4 @@
     </div>
   </main>
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 {% endblock %}

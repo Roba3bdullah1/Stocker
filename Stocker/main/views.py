@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from product.models import Product, Stock, Category, Supplier
+from product.models import Product, Category, Supplier
 from django.contrib.auth.forms import UserCreationForm
 from .forms import CustomUserCreationForm
 
@@ -14,8 +14,9 @@ def dashboard_view(request):
     total_products = Product.objects.count()
     total_categories = Category.objects.count()
     total_suppliers = Supplier.objects.count()
-    out_of_stock = Stock.objects.filter(quantity=0).count()
-    low_stock = Stock.objects.filter(quantity__range=(1,4)).count()
+    
+    out_of_stock = Product.objects.filter(stock_quantity=0).count()
+    low_stock = Product.objects.filter(stock_quantity__gt=0, stock_quantity__lt=5).count()
 
     context = {
         'total_products': total_products,

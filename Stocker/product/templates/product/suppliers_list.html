@@ -40,63 +40,78 @@
   </nav>
 
   <main class="main-content flex-grow-1 p-4">
-    <h2 class="mb-4 fw-semibold">Suppliers List</h2>
+    <h2 class="mb-4 ">Suppliers List</h2>
 
     <div class="mb-3 d-flex justify-content-between align-items-center">
-      <a href="{% url 'product:add_supplier_view' %}" class="btn btn-primary">Add New Supplier</a>
+      <a href="{% url 'product:add_supplier_view' %}" class="btn btn-primary rounded-3">Add New Supplier</a>
 
-      <form method="GET" class="d-flex" role="search">
+      <form method="GET" class="d-flex " role="search">
         <input
-          class="form-control me-2"
+          class="form-control me-2 rounded-3"
           type="search"
           name="q"
           placeholder="Search suppliers..."
           value="{{ request.GET.q|default:'' }}"
           aria-label="Search"
         />
-        <button class="btn btn-outline-secondary" type="submit">Search</button>
+        <button class="btn btn-outline-secondary rounded-3" type="submit">Search</button>
       </form>
     </div>
 
     <table class="table table-hover table-striped align-middle">
-      <thead class="table-light">
-        <tr>
-          <th>#</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Phone</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for supplier in suppliers %}
-        <tr>
-          <td>{{ forloop.counter }}</td>
-          <td>{{ supplier.name }}</td>
-          <td>{{ supplier.email }}</td>
-          <td>{{ supplier.phone }}</td>
-          <td>
-            <a href="{% url 'product:supplier_detail_view' supplier.id %}" class="btn btn-sm btn-outline-info me-1">Details</a>
-            <a href="{% url 'product:update_supplier_view' supplier.id %}" class="btn btn-sm btn-outline-primary me-1">Edit</a>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-danger"
-              data-bs-toggle="modal"
-              data-bs-target="#deleteSupplierModal"
-              data-supplier-id="{{ supplier.id }}"
-              data-supplier-name="{{ supplier.name }}"
-            >
-              Delete
-            </button>
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="5" class="text-center text-muted">No suppliers found.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <thead class="table-light">
+    <tr>
+      <th scope="col" style="width: 5%;">#</th>
+      <th scope="col" style="width: 25%;">Name</th>
+      <th scope="col" style="width: 30%;">Email</th>
+      <th scope="col" style="width: 20%;">Phone</th>
+      <th scope="col" style="width: 20%;">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for supplier in suppliers %}
+    <tr>
+      <th scope="row">{{ forloop.counter }}</th>
+      <td>{{ supplier.name }}</td>
+      <td>
+        <a href="mailto:{{ supplier.email }}" style="color: #5a2a83; text-decoration: none;">
+  {{ supplier.email }}
+</a>
+      </td>
+      <td>{{ supplier.phone }}</td>
+      <td>
+        <a href="{% url 'product:supplier_detail_view' supplier.id %}" class="btn btn-sm me-1 p-1" title="Details">
+          <span class="material-symbols-outlined" style="color: rgb(66, 114, 202); font-size: 1.2rem; vertical-align: middle;">
+            info
+          </span>
+        </a>
+        <a href="{% url 'product:update_supplier_view' supplier.id %}" class="btn btn-sm me-1 p-1" title="Edit">
+          <span class="material-symbols-outlined" style="color: rgb(64, 41, 116); font-size: 1.2rem; vertical-align: middle;">
+            edit_square
+          </span>
+        </a>
+        <button
+          type="button"
+          class="btn btn-sm p-1 text-danger"
+          data-bs-toggle="modal"
+          data-bs-target="#deleteSupplierModal"
+          data-supplier-id="{{ supplier.id }}"
+          data-supplier-name="{{ supplier.name }}"
+          title="Delete"
+        >
+          <span class="material-symbols-outlined" style="font-size: 1.2rem; vertical-align: middle;">
+            delete
+          </span>
+        </button>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5" class="text-center text-muted">No suppliers found.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
     {% if is_paginated %}
     <nav aria-label="Page navigation">

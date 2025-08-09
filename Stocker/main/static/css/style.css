@@ -1,60 +1,64 @@
-
+body {
+  padding-top: 70px; 
+}
 .main-content {
   margin-left: 260px;
   padding: 2rem;
   min-height: 100vh;
-  margin-top: 80px; /* ✅ نفس المسافة من الأعلى حتى لا يختفي خلف الناف بار */
+  margin-top: 50px; 
 }
 
 
-/* الحاوية الرئيسية */
+
 .dashboard-container {
   min-height: 100vh;
   display: flex;
   background-color: #f9fafb;
 }
 
-/* الشريط الجانبي */
+
 .sidebar {
   position: fixed;
-  top: 80px; /* ✅ أسفل الناف بار بمقدار 80px */
+  top: 80px; 
   left: 20px;
-  height: calc(100vh - 100px); /* ✅ نقصنا الارتفاع بقدر المسافة العلوية + مسافة سفلية بسيطة */
+  height: calc(100vh - 100px);
   width: 220px;
-  background-color: #9f83b9 !important;
+  background: rgba(105, 74, 134, 0.7); 
   padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
   z-index: 1030;
   border-radius: 15px;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
   overflow-y: auto;
+  backdrop-filter: blur(8px);
 }
 
 
-/* روابط الناف بار */
 .sidebar .nav-link {
   color: white;
   font-weight: 500;
   margin-bottom: 10px;
   border-radius: 8px;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
+  padding: 8px 12px;
 }
 
 .sidebar .nav-link:hover,
 .sidebar .nav-link.active {
-  background-color: rgba(255,255,255,0.15);
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateX(5px); 
 }
 
-/* المحتوى الرئيسي */
+
 .main-content {
-  margin-left: 260px; /* عرض الشريط + المسافة */
+  margin-left: 260px; 
   flex-grow: 1;
   padding: 2rem;
   min-height: 100vh;
 }
 
-/* استجابة الشاشات الصغيرة */
+
 @media (max-width: 767.98px) {
   .dashboard-container {
     flex-direction: column;
@@ -77,26 +81,26 @@
 }
 
 .main-content h2 {
-  font-size: 1.5rem; /* حجم عنوان الداشبورد */
+  font-size: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
 .main-content .card {
-  padding: 1.2rem; /* تصغير البادينغ للكروت */
-  border-radius: 12px; /* زوايا أقل */
+  padding: 1.2rem;
+  border-radius: 12px; 
 }
 
 .main-content .card h6 {
-  font-size: 0.85rem; /* العنوان العلوي داخل البطاقة */
+  font-size: 0.85rem; 
   margin-bottom: 0.5rem;
 }
 
 .main-content .card h3 {
-  font-size: 1.4rem; /* الرقم الرئيسي */
+  font-size: 1.4rem; 
 }
 
 #stockChart {
-  max-height: 200px; /* تقليل ارتفاع الرسم البياني */
+  max-height: 200px; 
 }
 
 
@@ -116,4 +120,71 @@
     font-size: 0.8rem;
     padding: 0.75rem 0;
   }
+}
+
+h1 {
+  color: #5f39a5;
+  font-weight: 150;
+  
+}
+.main-content h2 {
+  font-size: 2rem; 
+  font-weight: 150 !important;  
+}
+
+h3{
+   color: #5f39a5;
+  font-weight: 150 !important;
+
+}
+
+.btn-primary {
+  background-color:#7e6aa4;
+  border-color: #7e6aa4;
+}
+
+.btn-primary:hover {
+  background-color: #5a3e97;
+  border-color: #5936a2;
+}
+
+.btn-outline-secondary {
+  color: #6f42c1;
+  border-color: #6f42c1;
+}
+
+.btn-outline-secondary:hover {
+  background-color:#5a3e97;
+  color: white;
+}
+
+
+.text-center.mt-3 a {
+    color: #6f42c1; 
+    text-decoration: none; 
+}
+
+.text-center.mt-3 a:hover {
+    color: #5a32a3; 
+    text-decoration: underline; 
+}
+
+
+.btn-primary,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active,
+.show > .btn-primary.dropdown-toggle {
+  background-color: #725d98  !important; 
+  border-color: #725d98  !important;
+  box-shadow: none !important;
+  color: white !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus:hover {
+  background-color: #453b5b !important; 
+  border-color: #44385c !important;
+  color: white !important;
+  box-shadow: none !important;
 }

@@ -3,6 +3,10 @@
 
 {% block title %}Add Product{% endblock %}
 
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid dashboard-container">
   <nav class="sidebar text-white rounded-3">
@@ -34,9 +38,10 @@
       </li>
     </ul>
   </nav>
-  <!-- Main Content -->
+
+
 <main class="main-content flex-grow-1 p-4">
-    <h2 class="mb-4 fw-semibold">Add New Product</h2>
+    <h2 class="mb-4 ">Add New Product</h2>
 
     <form method="POST" enctype="multipart/form-data" action="{% url 'product:add_product_view' %}">
       {% csrf_token %}

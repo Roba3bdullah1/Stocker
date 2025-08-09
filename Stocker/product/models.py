@@ -37,22 +37,16 @@ class Product(models.Model):
     image = models.ImageField(upload_to="images/", default="images/default.jpg")
     created_at = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
-
-
-
-class Stock(models.Model):
-    product = models.OneToOneField('Product', on_delete=models.CASCADE, related_name='stock')
-    quantity = models.PositiveIntegerField(default=0)
-    last_updated = models.DateTimeField(auto_now=True)
+    stock_quantity = models.PositiveIntegerField(default=0) 
     expiry_date = models.DateField(null=True, blank=True)
 
     LOW_STOCK_THRESHOLD = 5
 
     def is_low_stock(self):
-        return 0 < self.quantity < self.LOW_STOCK_THRESHOLD
+        return 0 < self.stock_quantity < self.LOW_STOCK_THRESHOLD
 
     def is_out_of_stock(self):
-        return self.quantity == 0
+        return self.stock_quantity == 0
 
     def is_expired(self):
         if self.expiry_date:
