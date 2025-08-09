@@ -24,10 +24,11 @@ class Supplier(models.Model):
 
 class Product(models.Model):
     STATUS_CHOICES = [
-        ('available', 'Available'),      
-        ('out_of_stock', 'Out of Stock'),
-        ('discontinued', 'Discontinued'),
-    ]
+    ('available', 'Available'),      
+    ('out_of_stock', 'Out of Stock'),
+    ('discontinued', 'Discontinued'),
+    ('low_stock', 'Low Stock'), 
+]
 
     name = models.CharField(max_length=150)
     description = models.TextField(blank=True)

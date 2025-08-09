@@ -22,9 +22,14 @@ urlpatterns = [
     path('categories/<int:pk>/update/', views.update_category_view, name='update_category_view'),
     path('categories/<int:pk>/delete/', views.delete_category_view, name='delete_category_view'),
 
-    path('stock/', views.stock_management_view, name='stock_management_view'),
-    path('stock/update/<int:pk>/', views.update_stock_view, name='update_stock_view'),
-    path('stock/report/', views.stock_report_view, name='stock_report_view'),
+    path('products/update-stock/<int:product_id>/', views.update_stock_view, name='update_stock_view'),
+
+    path('inventory/', views.inventory_report_view, name='inventory_report_view'),
+    path('inventory/export/', views.export_csv_view, name='export_csv_view'),
+    path('inventory/import/', views.import_csv_view, name='import_csv_view'),
+    path('suppliers/report',views.supplier_report_view, name='supplier_report_view'),
+
+
 
 
 

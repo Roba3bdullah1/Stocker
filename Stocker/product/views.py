@@ -1,4 +1,7 @@
 from django.shortcuts import render,redirect,get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from django.http import HttpRequest, HttpResponse
 from django.contrib import messages
 from .models import Product
@@ -12,6 +15,9 @@ from django.db.models import Q
 from .models import Product
 from django.utils import timezone
 from django.db.models import Sum
+import json
+from django.db.models import Count
+import csv
 
 
 def add_product_view(request: HttpRequest):
@@ -49,21 +55,32 @@ def delete_product_view(request, pk):
  
 
 def products_list_view(request):
-    query = request.GET.get('q')
-    if query:
-        products = Product.objects.filter(name__icontains=query)
-    else:
-        products = Product.objects.all()
+    search_query = request.GET.get('q', '')  
+    selected_supplier = request.GET.get('supplier', '')  
 
-    paginator = Paginator(products, 10) 
+    products = Product.objects.all()
+
+    if search_query:
+        products = products.filter(name__icontains=search_query)
+
+    if selected_supplier:
+        products = products.filter(supplier__id=selected_supplier)
+
+    paginator = Paginator(products, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
+ 
+    suppliers = Supplier.objects.all()
 
     context = {
         'products': page_obj.object_list,
         'is_paginated': page_obj.has_other_pages(),
         'page_obj': page_obj,
         'paginator': paginator,
+        'search_query': search_query,
+        'selected_supplier': selected_supplier,
+        'suppliers': suppliers,
     }
     return render(request, 'product/product_list.html', context)
 
@@ -178,43 +195,191 @@ def delete_category_view(request:HttpRequest, pk):
 
 
 
-def stock_management_view(request):
-    stocks = Stock.objects.select_related('product').all()
-
-    low_stock_items = [i for i in stocks if i.is_low_stock()]
-    expired_items = [i for i in stocks if i.is_expired()]
-
-    context = {
-        'stocks': stocks,
-        'low_stock_items': low_stock_items,
-        'expired_items': expired_items,
-    }
-    return render(request, 'product/stock_management.html', context)
-
-def update_stock_view(request, pk):
-    product = get_object_or_404(Product, pk=pk)
+def update_stock_view(request, product_id):
     if request.method == 'POST':
-        new_quantity = request.POST.get('stock_quantity')
-        if new_quantity.isdigit():
-            product.stock_quantity = int(new_quantity)
-            product.save()
-            messages.success(request, f'Stock updated for {product.name}')
-            return redirect('product:products_list_view')
-        else:
-            messages.error(request, 'Please enter a valid number.')
-    
-    return render(request, 'product/update_stock.html', {'product': product})
+        try:
+            data = json.loads(request.body)
+            new_stock = int(data.get('stock', -1))
+            if new_stock < 0:
+                return JsonResponse({'success': False, 'error': 'Invalid stock value'})
 
+            product = Product.objects.get(id=product_id)
+            product.stock_quantity = new_stock
+
+            #
+            if new_stock == 0:
+                product.status = 'out_of_stock'
+            elif new_stock < product.LOW_STOCK_THRESHOLD:
+                product.status = 'low_stock'
+            else:
+                product.status = 'available'
+
+            product.save()
+
+           
+            if product.status == 'out_of_stock':
+                stock_status = 'Out of Stock'
+            elif product.status == 'low_stock':
+                stock_status = 'Low Stock'
+            else:
+                stock_status = 'Available'
+
+            return JsonResponse({'success': True, 'status': stock_status})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    else:
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+    
 def stock_report_view(request):
-    total_products = Stock.objects.count()
-    total_quantity = Stock.objects.aggregate(total=Sum('quantity'))['total'] or 0
-    low_stock_count = Stock.objects.filter(quantity__lt=Stock.LOW_STOCK_THRESHOLD).count()
-    expired_count = Stock.objects.filter(expiry_date__lt=timezone.now().date()).count()
+    pass
+ 
+def inventory_report_view(request):
+    category_id = request.GET.get('category')
+    supplier_id = request.GET.get('supplier')
+    status = request.GET.get('status')
+
+    products = Product.objects.all().order_by('name')  
+
+    if category_id:
+        products = products.filter(category_id=category_id)
+    if supplier_id:
+        products = products.filter(supplier_id=supplier_id)
+    if status:
+        products = products.filter(status=status)
+
+    today = timezone.now().date()
+
+    total_products = products.count()
+    available_count = products.filter(status='available').count()
+    low_stock_count = products.filter(status='low_stock').count()
+    out_of_stock_count = products.filter(status='out_of_stock').count()
+    discontinued_count = products.filter(status='discontinued').count()
+    expired_count = products.filter(expiry_date__lt=today).count()
+
+    categories = Category.objects.all()
+    suppliers = Supplier.objects.all()
 
     context = {
+        'products': products,
         'total_products': total_products,
-        'total_quantity': total_quantity,
+        'available_count': available_count,
         'low_stock_count': low_stock_count,
+        'out_of_stock_count': out_of_stock_count,
+        'discontinued_count': discontinued_count,
+        'expired_count': expired_count,
+        'categories': categories,
+        'suppliers': suppliers,
+        'selected_category': category_id,
+        'selected_supplier': supplier_id,
+        'selected_status': status,
+    }
+    return render(request, 'product/inventory_report.html', context)
+
+
+
+def export_csv_view(request):
+    category_id = request.GET.get('category')
+    supplier_id = request.GET.get('supplier')
+    status = request.GET.get('status')
+
+    products = Product.objects.all().order_by('name')
+    if category_id:
+        products = products.filter(category_id=category_id)
+    if supplier_id:
+        products = products.filter(supplier_id=supplier_id)
+    if status:
+        products = products.filter(status=status)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="inventory_report.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['ID', 'Name', 'Category', 'Supplier', 'Status', 'Stock Quantity', 'Expiry Date', 'Price'])
+
+    for p in products:
+        writer.writerow([
+            p.id,
+            p.name,
+            p.category.name if p.category else '',
+            p.supplier.name if p.supplier else '',
+            p.status,
+            p.stock_quantity,
+            p.expiry_date.strftime('%Y-%m-%d') if p.expiry_date else '',
+            p.price,
+        ])
+
+    return response
+
+
+from django import forms
+
+class CsvImportForm(forms.Form):
+    csv_file = forms.FileField(label='Select CSV file')
+
+
+def import_csv_view(request):
+    if request.method == 'POST':
+        form = CsvImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            csv_file = form.cleaned_data['csv_file']
+            decoded_file = csv_file.read().decode('utf-8').splitlines()
+            reader = csv.DictReader(decoded_file)
+            count = 0
+            for row in reader:
+                category = Category.objects.filter(name=row.get('Category')).first()
+                supplier = Supplier.objects.filter(name=row.get('Supplier')).first()
+
+                name = row.get('Name')
+                if not name:
+                    continue
+
+                product, created = Product.objects.update_or_create(
+                    name=name,
+                    defaults={
+                        'category': category,
+                        'supplier': supplier,
+                        'status': row.get('Status', ''),
+                        'stock_quantity': int(row.get('Stock Quantity', 0)),
+                        'expiry_date': row.get('Expiry Date') or None,
+                        'price': float(row.get('Price', 0)),
+                    }
+                )
+                count += 1
+
+           
+            return HttpResponseRedirect(reverse('product:inventory_report_view') + '?imported=' + str(count))
+    else:
+        form = CsvImportForm()
+
+    return render(request, 'product/import_csv.html', {'form': form})
+
+
+def supplier_report_view(request):
+    active = request.GET.get('active')
+    suppliers = Supplier.objects.annotate(products_count=Count('product'))
+
+    if active == 'yes':
+        suppliers = suppliers.filter(products_count__gt=0)
+    elif active == 'no':
+        suppliers = suppliers.filter(products_count=0)
+
+    today = timezone.now().date()
+    products = Product.objects.all()
+
+    available_count = products.filter(status='available').count()
+    low_stock_count = products.filter(status='low_stock').count()
+    out_of_stock_count = products.filter(status='out_of_stock').count()
+    discontinued_count = products.filter(status='discontinued').count()
+    expired_count = products.filter(expiry_date__lt=today).count()
+
+    context = {
+        'suppliers': suppliers,
+        'selected_active': active,
+        'available_count': available_count,
+        'low_stock_count': low_stock_count,
+        'out_of_stock_count': out_of_stock_count,
+        'discontinued_count': discontinued_count,
         'expired_count': expired_count,
     }
-    return render(request, 'product/stock_report.html', context)
+    return render(request, 'product/supplier_report.html', context)

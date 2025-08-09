@@ -4,14 +4,34 @@
 {% block title %}Products{% endblock %}
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+<style>
+  input.stock-input {
+    width: 70px;
+    text-align: center;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid dashboard-container">
-  <nav class="sidebar text-white rounded-3">
-    <ul class="nav nav-pills flex-column gap-2">
+
+<div class="container-fluid dashboard-container d-flex">
+  <nav class="sidebar text-white rounded-3 me-4 d-flex flex-column" style="min-width: 220px;">
+    {% if request.user.is_authenticated %}
+    <div class="p-3 border-bottom">
+      <span class="text-white">
+        Welcome, <strong>{{ request.user.username }}</strong>
+      </span>
+    </div>
+    {% endif %}
+
+    <ul class="nav nav-pills flex-column gap-2 flex-grow-1 mt-3">
       <li class="nav-item">
-        <a href="{% url 'product:products_list_view' %}" class="nav-link text-white rounded-3 px-3 py-2">
+        <a href="{% url 'main:dashboard_view' %}" class="nav-link text-white rounded-3 px-3 py-2">
+          <i class="bi bi-bar-chart-fill me-2"></i> Dashboard
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'product:products_list_view' %}" class="nav-link text-white rounded-3 px-3 py-2 active">
           <i class="bi bi-box-seam me-2"></i> Products
         </a>
       </li>
@@ -25,17 +45,13 @@
           <i class="bi bi-truck me-2"></i> Suppliers
         </a>
       </li>
-      <li class="nav-item">
-        <a href="#" class="nav-link text-white rounded-3 px-3 py-2">
-          <i class="bi bi-bar-chart-fill me-2"></i> Stock
-        </a>
-      </li>
-      <li class="nav-item mt-auto">
-        <a href="{% url 'main:logout_view' %}" class="nav-link text-white rounded-3 px-3 py-2">
-          <i class="bi bi-box-arrow-right me-2"></i> Logout
-        </a>
-      </li>
     </ul>
+
+    <div class="mt-auto p-3 border-top">
+      <a href="{% url 'main:logout_view' %}" class="nav-link text-white rounded-3 px-3 py-2">
+        <i class="bi bi-box-arrow-right me-2"></i> Logout
+      </a>
+    </div>
   </nav>
 
   <main class="main-content">
@@ -43,18 +59,29 @@
 
     <div class="mb-3 d-flex justify-content-between align-items-center">
       <a href="{% url 'product:add_product_view' %}" class="btn btn-primary rounded-3">Add New Product</a>
-      <form method="GET" class="d-flex" role="search">
-        <input
-          class="form-control me-2 rounded-3"
-          type="search"
-          name="q"
-          placeholder="Search products..."
-          value="{{ request.GET.q|default:'' }}"
-          aria-label="Search"
-        >
-        <button class="btn btn-outline-secondary rounded-3" type="submit">Search</button>
-      </form>
     </div>
+
+
+    <form method="GET" class="d-flex align-items-center gap-2 mb-3" role="search">
+      <input
+        class="form-control me-2 rounded-3"
+        type="search"
+        name="q"
+        placeholder="Search products..."
+        value="{{ search_query }}"
+        aria-label="Search"
+        style="min-width: 200px;"
+      >
+
+      <select name="supplier" class="form-select rounded-3" style="min-width: 180px;">
+        <option value="">-- All Suppliers --</option>
+        {% for supplier in suppliers %}
+          <option value="{{ supplier.id }}" {% if supplier.id|stringformat:"s" == selected_supplier %}selected{% endif %}>{{ supplier.name }}</option>
+        {% endfor %}
+      </select>
+
+      <button class="btn btn-outline-secondary rounded-3" type="submit">Filter</button>
+    </form>
 
     <table class="table table-hover table-striped align-middle">
       <thead class="table-light">
@@ -66,52 +93,52 @@
           <th>Price</th>
           <th>Status</th>
           <th>Stock Qty</th>
-          <th>Expiry Date</th>  <!-- عمود جديد -->
+          <th>Expiry Date</th>  
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for product in products %}
-        <tr>
+        <tr id="product-{{ product.id }}">
           <td>{{ forloop.counter }}</td>
           <td>
-            <a href="{% url 'product:product_detail_view' product.id %}" style="color: #5a2a83; text-decoration: none;">
+            <a href="{% url 'product:product_detail_view' product.id %}" style="color: #674f6a ; text-decoration: none;">
               {{ product.name }}
             </a>
           </td>  
           <td>{{ product.category.name }}</td>
           <td>{{ product.supplier.name }}</td>
           <td>${{ product.price }}</td>
-          <td>
+          <td class="stock-status">
             {% if product.status == 'available' %}
-              <span class="badge bg-success">Available</span>
-            {% elif product.status == 'out_of_stock' %}
-              <span class="badge bg-warning text-dark">Out of Stock</span>
-            {% elif product.status == 'discontinued' %}
-              <span class="badge bg-danger">Discontinued</span>
-            {% else %}
-              <span class="badge bg-secondary">Unknown</span>
-            {% endif %}
+                <span class="badge bg-success">Available</span>
+              {% elif product.status == 'low_stock' %}
+                <span class="badge bg-warning text-dark">Low Stock</span>
+              {% elif product.status == 'out_of_stock' %}
+                <span class="badge bg-danger">Out of Stock</span>
+              {% elif product.status == 'discontinued' %}
+                <span class="badge bg-secondary">Discontinued</span>
+              {% else %}
+                <span class="badge bg-secondary">Unknown</span>
+              {% endif %}
           </td>
-          <td>{{ product.stock_quantity }}</td>
           <td>
-           {% if product.is_expired %}
-  <span style="color: red; font-weight: bold;">Expired</span>
-{% else %}
+            <input type="number" min="0" class="form-control stock-input" data-id="{{ product.id }}" value="{{ product.stock_quantity }}">
+          </td>
+          <td>
+            {% if product.is_expired %}
+              <span style="color: rgb(86, 30, 83); font-weight: bold;">Expired</span>
+            {% else %}
               {{ product.expiry_date|date:"Y-m-d"|default:"-" }}
             {% endif %}
           </td>
           <td>
             <a href="{% url 'product:update_product_view' product.id %}" class="btn btn-sm me-1 p-1" title="Edit">
-              <span class="material-symbols-outlined" style="color: rgb(64, 41, 116); font-size: 1.2rem; vertical-align: middle;">
+              <span class="material-symbols-outlined" style="color: #674f6a; font-size: 1.2rem; vertical-align: middle;">
                 edit_square
               </span>
             </a>
-            <a href="#" class="btn btn-sm me-1 p-1" title="Manage Stock">
-              <span class="material-symbols-outlined" style="color: rgb(184, 134, 11); font-size: 1.2rem; vertical-align: middle;">
-                inventory_2
-              </span>
-            </a>
+            
             <button
               type="button"
               class="btn btn-sm p-1 text-danger"
@@ -140,7 +167,7 @@
       <ul class="pagination justify-content-center">
         {% if page_obj.has_previous %}
         <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Previous</a>
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_supplier %}&supplier={{ selected_supplier }}{% endif %}">Previous</a>
         </li>
         {% else %}
         <li class="page-item disabled"><span class="page-link">Previous</span></li>
@@ -150,13 +177,13 @@
           {% if page_obj.number == num %}
             <li class="page-item active" aria-current="page"><span class="page-link">{{ num }}</span></li>
           {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ num }}</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_supplier %}&supplier={{ selected_supplier }}{% endif %}">{{ num }}</a></li>
           {% endif %}
         {% endfor %}
 
         {% if page_obj.has_next %}
         <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Next</a>
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_supplier %}&supplier={{ selected_supplier }}{% endif %}">Next</a>
         </li>
         {% else %}
         <li class="page-item disabled"><span class="page-link">Next</span></li>
@@ -181,17 +208,35 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-danger">Delete</button>
+          <button type="submit" class="btn" style="background-color: #674f6a; color: white; border: none;">Delete</button>
         </div>
       </div>
     </form>
   </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+
   var deleteModal = document.getElementById('deleteProductModal');
   deleteModal.addEventListener('show.bs.modal', function (event) {
     var button = event.relatedTarget;
@@ -202,6 +247,43 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var form = document.getElementById('deleteProductForm');
     form.action = `/products/delete/${productId}/`;
+  });
+
+  document.querySelectorAll('.stock-input').forEach(function(input) {
+    input.addEventListener('change', function() {
+      const productId = this.dataset.id;
+      const newStock = this.value;
+
+      fetch(`/products/update-stock/${productId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({stock: newStock})
+      })
+      .then(response => response.json())
+      .then(data => {
+        if(data.success){
+          const row = document.getElementById('product-' + productId);
+          const statusCell = row.querySelector('.stock-status');
+          let badgeHtml = '';
+          if(data.status === 'Out of Stock'){
+            badgeHtml = '<span class="badge bg-warning text-dark">Out of Stock</span>';
+          } else if(data.status === 'Low Stock'){
+            badgeHtml = '<span class="badge bg-warning text-dark">Low Stock</span>';
+          } else if(data.status === 'Available'){
+            badgeHtml = '<span class="badge bg-success">Available</span>';
+          } else {
+            badgeHtml = '<span class="badge bg-secondary">Unknown</span>';
+          }
+          statusCell.innerHTML = badgeHtml;
+        } else {
+          alert('Error: ' + data.error);
+        }
+      })
+      .catch(() => alert('An error occurred while updating stock.'));
+    });
   });
 });
 </script>

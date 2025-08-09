@@ -6,7 +6,10 @@ from .models import Category
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'description', 'category', 'supplier', 'price', 'image', 'status', 'stock_quantity', 'expiry_date']
+        fields = [
+            'name', 'description', 'category', 'supplier', 'price', 
+            'image', 'stock_quantity', 'expiry_date' 
+        ]
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -31,9 +34,7 @@ class ProductForm(forms.ModelForm):
             'image': forms.ClearableFileInput(attrs={
                 'class': 'form-control',
             }),
-            'status': forms.Select(attrs={
-                'class': 'form-select',
-            }),
+            
             'stock_quantity': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter stock quantity',
@@ -84,4 +85,3 @@ class CategoryForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter category name'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter description'}),
         }
-

@@ -17,10 +17,10 @@
 {% block navbar %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
   <div class="container-fluid">
-    <a class="navbar-brand d-flex align-items-center" href="{% url 'main:home_view' %}">
-      <span class="material-symbols-outlined me-2" style="font-size: 1.5rem;">fragrance</span>
-      ScentStock
-    </a>
+    <a class="navbar-brand d-flex align-items-center me-2" href="{% url 'main:home_view' %}" style="margin-left: 15px;">
+  <span class="material-symbols-outlined me-2" style="font-size: 1.5rem;">fragrance</span>
+  ScentStock
+</a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
       aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,31 +29,17 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto align-items-center">
-        {% if request.user.is_authenticated %}
-          <li class="nav-item me-3">
-            <span class="navbar-text text-white">
-              Welcome, <strong>{{ request.user.username }}</strong>
-            </span>
-          </li>
-
-          {% if request.user.is_superuser %}
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'main:dashboard_view' %}">Dashboard</a>
-            </li>
-          {% endif %}
-          
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'main:logout_view' %}">Logout</a>
-          </li>
-        {% else %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'main:login_view' %}">Login</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'main:signup_view' %}">Sign Up</a>
-          </li>
-        {% endif %}
-      </ul>
+  {% if request.user.is_authenticated %}
+   
+  {% else %}
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'main:login_view' %}">Login</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'main:signup_view' %}">Sign Up</a>
+    </li>
+  {% endif %}
+</ul>
     </div>
   </div>
 </nav>

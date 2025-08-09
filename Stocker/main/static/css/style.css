@@ -23,7 +23,7 @@ body {
   left: 20px;
   height: calc(100vh - 100px);
   width: 220px;
-  background: rgba(105, 74, 134, 0.7); 
+  background:  rgba(71, 41, 77, 0.6);
   padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
@@ -31,12 +31,12 @@ body {
   border-radius: 15px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
   overflow-y: auto;
-  backdrop-filter: blur(8px);
+ 
 }
 
 
 .sidebar .nav-link {
-  color: white;
+  color: rgb(255, 255, 255);
   font-weight: 500;
   margin-bottom: 10px;
   border-radius: 8px;
@@ -123,7 +123,7 @@ body {
 }
 
 h1 {
-  color: #5f39a5;
+  color:#674f6a ;
   font-weight: 150;
   
 }
@@ -133,13 +133,13 @@ h1 {
 }
 
 h3{
-   color: #5f39a5;
+   color: rgb(48, 15, 66);
   font-weight: 150 !important;
 
 }
 
 .btn-primary {
-  background-color:#7e6aa4;
+  background-color:#bb8eca;
   border-color: #7e6aa4;
 }
 
@@ -149,12 +149,12 @@ h3{
 }
 
 .btn-outline-secondary {
-  color: #6f42c1;
-  border-color: #6f42c1;
+  color:  #674f6a ;
+  border-color:  #674f6a ;
 }
 
 .btn-outline-secondary:hover {
-  background-color:#5a3e97;
+  background-color: #674f6a;
   color: white;
 }
 
@@ -175,7 +175,7 @@ h3{
 .btn-primary:active,
 .btn-primary.active,
 .show > .btn-primary.dropdown-toggle {
-  background-color: #725d98  !important; 
+  background-color: #674f6a  !important; 
   border-color: #725d98  !important;
   box-shadow: none !important;
   color: white !important;
@@ -187,4 +187,16 @@ h3{
   border-color: #44385c !important;
   color: white !important;
   box-shadow: none !important;
+}
+
+ .alert-purple {
+    background-color: rgba(103, 79, 106, 0.4) !important;
+    color: rgb(60, 36, 54) !important;
+    border-color:  rgb(60, 36, 54)!important;
+}
+
+.alert-pink {
+    background-color: rgba(161, 157, 159, 0.5) !important;
+    color: rgb(60, 36, 54) !important;
+      border-color:  rgb(60, 36, 54)!important;
 }
