@@ -60,37 +60,8 @@
     </div>
   </nav>
 
-
   <main class="main-content flex-grow-1">
     <h2 class="mb-4 fw-semibold">Dashboard Overview</h2>
-
-  <div class="row g-3 mb-4">
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm border-0 rounded-4 p-3 text-center">
-      <h6 class="text-muted mb-1">Products</h6>
-      <h3 class="fw-bold">{{ total_products }}</h3>
-    </div>
-  </div>
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm border-0 rounded-4 p-3 text-center">
-      <h6 class="text-muted mb-1">Categories</h6>
-      <h3 class="fw-bold">{{ total_categories }}</h3>
-    </div>
-  </div>
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm border-0 rounded-4 p-3 text-center">
-      <h6 class="text-muted mb-1">Suppliers</h6>
-      <h3 class="fw-bold">{{ total_suppliers }}</h3>
-    </div>
-  </div>
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm border-0 rounded-4 p-3 text-center">
-      <h6 class="text-muted mb-1">Out of Stock</h6>
-      <h3 class="fw-bold text-danger">{{ out_of_stock }}</h3>
-    </div>
-  </div>
-</div>
-
 
     <div>
       {% if low_stock_products %}
@@ -103,15 +74,110 @@
       {% endif %}
 
       {% if expired_products or expiring_soon_products %}
-  <div class="alert alert-pink d-flex align-items-center mt-3" role="alert">
-    <i class="bi bi-exclamation-octagon-fill me-2 fs-4"></i>
-    <div>
-      <strong>Expiry Alert!</strong> Some products are expired or close to expiry.
+      <div class="alert alert-pink d-flex align-items-center mt-3" role="alert">
+        <i class="bi bi-exclamation-octagon-fill me-2 fs-4"></i>
+        <div>
+          <strong>Expiry Alert!</strong> Some products are expired or close to expiry.
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+
+    <div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm border-0 rounded-4 p-3 text-center h-100">
+      <h6 class="text-muted mb-1">Products</h6>
+      <h3 class="fw-bold">{{ total_products }}</h3>
     </div>
   </div>
-{% endif %}
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm border-0 rounded-4 p-3 text-center h-100">
+      <h6 class="text-muted mb-1">Categories</h6>
+      <h3 class="fw-bold">{{ total_categories }}</h3>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm border-0 rounded-4 p-3 text-center h-100">
+      <h6 class="text-muted mb-1">Suppliers</h6>
+      <h3 class="fw-bold">{{ total_suppliers }}</h3>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm border-0 rounded-4 p-3 text-center h-100">
+      <h6 class="text-muted mb-1">Out of Stock</h6>
+      <h3 class="fw-bold text-danger">{{ out_of_stock }}</h3>
+    </div>
+  </div>
+</div>
 
-    
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm border-0 rounded-4 p-3 text-center h-100">
+      <h6 class="text-muted mb-1">Available</h6>
+      <h3 class="fw-bold">{{ available }}</h3>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm border-0 rounded-4 p-3 text-center h-100">
+      <h6 class="text-muted mb-1">Low Stock</h6>
+      <h3 class="fw-bold">{{ low_stock }}</h3>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+  <div class="card shadow-sm border-0 rounded-4 p-3 text-center h-100">
+    <h6 class="text-muted mb-1">Expiring Soon</h6>
+    <h3 class="fw-bold">{{ expiring_soon_products|length }}</h3>
+  </div>
+</div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm border-0 rounded-4 p-3 text-center h-100">
+      <h6 class="text-muted mb-1">Expired</h6>
+      <h3 class="fw-bold text-danger">{{ expired_products|length }}</h3>
+    </div>
+  </div>
+</div>
+
+
+
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-lg-6">
+        <div class="card shadow-sm rounded-4 p-4 h-100">
+          <h5 class="mb-4">Stock Overview </h5>
+          <canvas id="stockChart" height="250"></canvas>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="card shadow-sm rounded-4 p-4 h-100">
+          <h5 class="mb-4">Supplier Performance</h5>
+          <canvas id="barChart" height="250"></canvas>
+        </div>
+      </div>
+    </div>
+   
+    <div class="mb-4">
+      <h5 class="mb-3">Reports & Analytics</h5>
+      <div class="row g-3">
+        <div class="col-12 col-md-6 col-lg-3">
+          <a href="{% url 'product:inventory_report_view' %}" class="text-decoration-none">
+            <div class="card shadow-sm rounded-4 p-3 h-100 d-flex flex-column justify-content-center align-items-center" style="color: #674f6a;">
+              <i class="bi bi-graph-up-arrow fs-1 mb-2"></i>
+              <h6>Inventory Reports</h6>
+            </div>
+          </a>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3">
+          <a href="{% url 'product:supplier_report_view' %}" class="text-decoration-none">
+            <div class="card shadow-sm rounded-4 p-3 h-100 d-flex flex-column justify-content-center align-items-center" style="color: #674f6a;">
+              <i class="bi bi-truck fs-1 mb-2"></i>
+              <h6>Supplier Reports</h6>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
     <div class="card shadow-sm rounded-4 p-4 mb-5">
       <h5 class="mb-4">Low Stock Products</h5>
       {% if low_stock_products %}
@@ -133,8 +199,8 @@
               <td>{{ forloop.counter }}</td>
               <td>
                 <a href="{% url 'product:product_detail_view' product.id %}" style="color: #674f6a; text-decoration: none;">
-              {{ product.name }}
-            </a>
+                  {{ product.name }}
+                </a>
               </td>
               <td>{{ product.category.name }}</td>
               <td>
@@ -152,9 +218,11 @@
               </td>
               <td><span class="badge text-dark">{{ product.stock_quantity }}</span></td>
               <td>
-                <a href="{% url 'product:update_product_view' product.id %}" class="btn btn-sm me-1 p-1"> <span class="material-symbols-outlined" style="color: #674f6a; font-size: 1.2rem; vertical-align: middle;">
-                edit_square
-              </span></a>
+                <a href="{% url 'product:update_product_view' product.id %}" class="btn btn-sm me-1 p-1">
+                  <span class="material-symbols-outlined" style="color: #674f6a; font-size: 1.2rem; vertical-align: middle;">
+                    edit_square
+                  </span>
+                </a>
               </td>
             </tr>
             {% endfor %}
@@ -165,92 +233,85 @@
       <p class="text-muted">No products with low stock.</p>
       {% endif %}
     </div>
-    
-     <div class="mb-4">
-    <h5 class="mb-3">Reports & Analytics</h5>
-    <div class="row g-3">
-      <div class="col-12 col-md-6 col-lg-3">
-        <a href=" {% url 'product:inventory_report_view' %}" class="text-decoration-none">
-          <div class="card shadow-sm rounded-4 p-3 h-100 d-flex flex-column justify-content-center align-items-center" style="color: #674f6a;">
-            <i class="bi bi-graph-up-arrow fs-1 mb-2"></i>
-            <h6>Inventory Reports</h6>
-          </div>
-        </a>
-      </div>
-      <div class="col-12 col-md-6 col-lg-3">
-        <a href="{% url 'product:supplier_report_view' %}" class="text-decoration-none">
-          <div class="card shadow-sm rounded-4 p-3 h-100 d-flex flex-column justify-content-center align-items-center" style="color: #674f6a;">
-            <i class="bi bi-truck fs-1 mb-2"></i>
-            <h6>Supplier Reports</h6>
-          </div>
-        </a>
-      </div>
-    </div>
-  </div>
 
-
-    <div class="card shadow-sm rounded-4 p-4">
-      <h5 class="mb-4">Stock Overview</h5>
-      <canvas id="stockChart" height="150"></canvas>
-    </div>
-  </main> 
+  </main>
 </div>
-
 
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+  const chartData = JSON.parse('{{ chart_data|escapejs }}'); 
   
-  const chartData = JSON.parse('{{ chart_data|escapejs }}');
-
   const ctx = document.getElementById('stockChart').getContext('2d');
-
   const data = {
     labels: ['Available', 'Out of Stock', 'Low Stock', 'Discontinued'],
     datasets: [{
       label: 'Products Count',
       data: chartData,
       backgroundColor: [
-        'rgba(136, 97, 158, 0.7)',    
-        'rgba(99, 8, 63, 0.7)',     
-        'rgba(190, 167, 185,0.7)',    
-        'rgba(108, 117, 125, 0.7)'    
+        'rgba(136, 97, 158, 0.7)',
+        'rgba(99, 8, 63, 0.7)',
+        'rgba(190, 167, 185, 0.7)',
+        'rgba(108, 117, 125, 0.7)'
       ],
       borderColor: [
-        'rgba(136, 97, 158)',
+        'rgba(136, 97, 158, 1)',
         'rgba(99, 8, 63, 1)',
-        'rgba(190, 167, 185,0.7)',
+        'rgba(190, 167, 185, 1)',
         'rgba(108, 117, 125, 1)'
       ],
       borderWidth: 1,
       hoverOffset: 30
     }]
   };
-
   const config = {
-    type: 'pie', 
+    type: 'pie',
     data: data,
     options: {
       responsive: true,
       plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            font: {
-              size: 14,
-            }
-          }
-        },
-        tooltip: {
-          enabled: true
-        }
+        legend: { position: 'bottom', labels: { font: { size: 14 } } },
+        tooltip: { enabled: true }
       }
     }
   };
-
   new Chart(ctx, config);
+
+  
+  const ctxBar = document.getElementById('barChart').getContext('2d');
+  const supplierLabels = JSON.parse('{{ supplier_labels|escapejs }}');
+  const supplierCounts = JSON.parse('{{ supplier_counts|escapejs }}');
+
+  const barData = {
+    labels: supplierLabels,
+    datasets: [{
+      label: 'Products per Supplier',
+      data: supplierCounts,
+      backgroundColor: 'rgba(103, 79, 106, 0.7)',
+      borderColor: 'rgba(103, 79, 106, 1)',
+      borderWidth: 1
+    }]
+  };
+
+  const barConfig = {
+    type: 'bar',
+    data: barData,
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 }
+        }
+      },
+      plugins: {
+        legend: { display: true },
+        tooltip: { enabled: true }
+      }
+    }
+  };
+  new Chart(ctxBar, barConfig);
 </script>
 {% endblock %}
-

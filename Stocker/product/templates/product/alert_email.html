@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Inventory Alert</title>
+</head>
+<body>
+    <h2>Inventory Alert</h2>
+
+    <p>Dear Manager,</p>
+
+    <p>This is an automated notification about inventory status.</p>
+
+    <ul>
+        <li><strong>Product Name:</strong> {{ product_name }}</li>
+        <li><strong>Stock Quantity:</strong> {{ stock_quantity }}</li>
+        {% if expiry_date %}
+        <li><strong>Expiry Date:</strong> {{ expiry_date|date:"Y-m-d" }}</li>
+        {% endif %}
+    </ul>
+
+    <p>Please check and update the inventory as needed.</p>
+
+</body>
+</html>

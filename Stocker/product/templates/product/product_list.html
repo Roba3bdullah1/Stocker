@@ -55,6 +55,17 @@
   </nav>
 
   <main class="main-content">
+    {% if messages %}
+  <div class="container mt-3">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  </div>
+ {% endif %}
+
     <h2 class="mb-4">Products List</h2>
 
     <div class="mb-3 d-flex justify-content-between align-items-center">
@@ -73,14 +84,30 @@
         style="min-width: 200px;"
       >
 
-      <select name="supplier" class="form-select rounded-3" style="min-width: 180px;">
-        <option value="">-- All Suppliers --</option>
-        {% for supplier in suppliers %}
-          <option value="{{ supplier.id }}" {% if supplier.id|stringformat:"s" == selected_supplier %}selected{% endif %}>{{ supplier.name }}</option>
+       <form method="GET" class="mb-4 d-flex flex-wrap gap-3 align-items-center">
+      <select name="category" class="form-select" style="max-width: 200px;">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
         {% endfor %}
       </select>
 
-      <button class="btn btn-outline-secondary rounded-3" type="submit">Filter</button>
+      <select name="supplier" class="form-select" style="max-width: 200px;">
+        <option value="">All Suppliers</option>
+        {% for sup in suppliers %}
+          <option value="{{ sup.id }}" {% if selected_supplier == sup.id|stringformat:"s" %}selected{% endif %}>{{ sup.name }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="status" class="form-select" style="max-width: 200px;">
+        <option value="">All Statuses</option>
+        <option value="available" {% if selected_status == 'available' %}selected{% endif %}>Available</option>
+        <option value="low_stock" {% if selected_status == 'low_stock' %}selected{% endif %}>Low Stock</option>
+        <option value="out_of_stock" {% if selected_status == 'out_of_stock' %}selected{% endif %}>Out of Stock</option>
+        <option value="discontinued" {% if selected_status == 'discontinued' %}selected{% endif %}>Discontinued</option>
+      </select>
+
+      <button type="submit" class="btn btn-primary px-4">Filter</button>
     </form>
 
     <table class="table table-hover table-striped align-middle">
@@ -139,19 +166,21 @@
               </span>
             </a>
             
-            <button
-              type="button"
-              class="btn btn-sm p-1 text-danger"
-              data-bs-toggle="modal"
-              data-bs-target="#deleteProductModal"
-              data-product-id="{{ product.id }}"
-              data-product-name="{{ product.name }}"
-              title="Delete"
-            >
-              <span class="material-symbols-outlined" style="font-size: 1.2rem; vertical-align: middle;">
-                delete
-              </span>
-            </button>
+            {% if perms.product.delete_product %}
+<button
+  type="button"
+  class="btn btn-sm p-1 text-danger"
+  data-bs-toggle="modal"
+  data-bs-target="#deleteProductModal"
+  data-product-id="{{ product.id }}"
+  data-product-name="{{ product.name }}"
+  title="Delete"
+>
+  <span class="material-symbols-outlined" style="font-size: 1.2rem; vertical-align: middle;">
+    delete
+  </span>
+</button>
+{% endif %}
           </td>
         </tr>
         {% empty %}
@@ -163,34 +192,35 @@
     </table>
 
     {% if is_paginated %}
-    <nav aria-label="Page navigation">
-      <ul class="pagination justify-content-center">
-        {% if page_obj.has_previous %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_supplier %}&supplier={{ selected_supplier }}{% endif %}">Previous</a>
-        </li>
-        {% else %}
-        <li class="page-item disabled"><span class="page-link">Previous</span></li>
-        {% endif %}
-
-        {% for num in paginator.page_range %}
-          {% if page_obj.number == num %}
-            <li class="page-item active" aria-current="page"><span class="page-link">{{ num }}</span></li>
-          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_supplier %}&supplier={{ selected_supplier }}{% endif %}">{{ num }}</a></li>
-          {% endif %}
-        {% endfor %}
-
-        {% if page_obj.has_next %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_supplier %}&supplier={{ selected_supplier }}{% endif %}">Next</a>
-        </li>
-        {% else %}
-        <li class="page-item disabled"><span class="page-link">Next</span></li>
-        {% endif %}
-      </ul>
-    </nav>
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    {% if page_obj.has_previous %}
+    <li class="page-item">
+      <a class="page-link text-secondary" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_supplier %}&supplier={{ selected_supplier }}{% endif %}">Previous</a>
+    </li>
+    {% else %}
+    <li class="page-item disabled"><span class="page-link text-secondary">Previous</span></li>
     {% endif %}
+
+    {% for num in paginator.page_range %}
+      {% if page_obj.number == num %}
+        <li class="page-item active" aria-current="page"><span class="page-link bg-secondary text-white border border-secondary">{{ num }}</span></li>
+      {% else %}
+        <li class="page-item"><a class="page-link text-secondary" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_supplier %}&supplier={{ selected_supplier }}{% endif %}">{{ num }}</a></li>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+    <li class="page-item">
+      <a class="page-link text-secondary" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_supplier %}&supplier={{ selected_supplier }}{% endif %}">Next</a>
+    </li>
+    {% else %}
+    <li class="page-item disabled"><span class="page-link text-secondary">Next</span></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
   </main>
 </div>
 
@@ -269,14 +299,14 @@ document.addEventListener('DOMContentLoaded', function () {
           const statusCell = row.querySelector('.stock-status');
           let badgeHtml = '';
           if(data.status === 'Out of Stock'){
-            badgeHtml = '<span class="badge bg-warning text-dark">Out of Stock</span>';
-          } else if(data.status === 'Low Stock'){
-            badgeHtml = '<span class="badge bg-warning text-dark">Low Stock</span>';
-          } else if(data.status === 'Available'){
-            badgeHtml = '<span class="badge bg-success">Available</span>';
-          } else {
-            badgeHtml = '<span class="badge bg-secondary">Unknown</span>';
-          }
+  badgeHtml = '<span class="badge bg-danger">Out of Stock</span>';
+} else if(data.status === 'Low Stock'){
+  badgeHtml = '<span class="badge bg-warning text-white">Low Stock</span>';
+} else if(data.status === 'Available'){
+  badgeHtml = '<span class="badge bg-success">Available</span>';
+} else {
+  badgeHtml = '<span class="badge bg-secondary">Unknown</span>';
+}
           statusCell.innerHTML = badgeHtml;
         } else {
           alert('Error: ' + data.error);

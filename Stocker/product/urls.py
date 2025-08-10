@@ -26,7 +26,6 @@ urlpatterns = [
 
     path('inventory/', views.inventory_report_view, name='inventory_report_view'),
     path('inventory/export/', views.export_csv_view, name='export_csv_view'),
-    path('inventory/import/', views.import_csv_view, name='import_csv_view'),
     path('suppliers/report',views.supplier_report_view, name='supplier_report_view'),
 
 

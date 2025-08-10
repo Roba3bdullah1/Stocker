@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,render
 from django.http import HttpRequest, HttpResponse
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
@@ -9,15 +9,21 @@ from .forms import CustomUserCreationForm
 from django.utils.timezone import now
 from django.db.models import Q, F
 from datetime import timedelta
+from django.contrib.auth.models import User
+import json
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.contrib import messages
+from django.db.models import Count
+from django.utils.timezone import now
+from datetime import timedelta
 import json
 
 def home_view(request):
     return render(request, 'main/home.html')
 
 @login_required
-
-
-
 def dashboard_view(request):
  
     total_products = Product.objects.count()
@@ -38,6 +44,10 @@ def dashboard_view(request):
 
     expiring_soon_products = Product.objects.filter(expiry_date__gte=today, expiry_date__lte=expiry_threshold)
 
+    top_suppliers = Supplier.objects.annotate(product_count=Count('product')).order_by('-product_count')[:5]
+    supplier_labels = [supplier.name for supplier in top_suppliers]
+    supplier_counts = [supplier.product_count for supplier in top_suppliers]
+
     context = {
         'total_products': total_products,
         'total_categories': total_categories,
@@ -50,8 +60,11 @@ def dashboard_view(request):
         'expired_products': expired_products,
         'expiring_soon_products': expiring_soon_products,
         'chart_data': chart_data,
+        'supplier_labels': json.dumps(supplier_labels),
+        'supplier_counts': json.dumps(supplier_counts),
     }
     return render(request, 'main/dashboard.html', context)
+
 
 
 def signup_view(request):
@@ -59,11 +72,11 @@ def signup_view(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
-            if user.is_staff or user.is_superuser:
+            if user.is_superuser:
+                login(request, user) 
                 return redirect('main:dashboard_view')
             else:
-                return redirect('main:home_view')
+                return redirect('main:login_view')  
     else:
         form = CustomUserCreationForm()
     return render(request, 'main/signup.html', {'form': form})
@@ -75,7 +88,6 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            messages.success(request, "Logged in successfully!")
             next_url = request.GET.get('next') or 'main:dashboard_view'  
             return redirect(next_url)
         else:
@@ -87,4 +99,6 @@ def logout_view(request):
     logout(request)
     messages.success(request, "logged out successfully", "alert-warning")
     return redirect('main:home_view') 
+
+
 
