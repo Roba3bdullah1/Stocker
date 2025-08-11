@@ -1,26 +1,20 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
 from django.http import HttpRequest, HttpResponse
 from django.contrib import messages
-from .models import Product
+from .models import Product,Supplier,Category
 from .forms import ProductForm
-from .models import Supplier
 from .forms import SupplierForm
-from .models import Category
 from .forms import CategoryForm
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils import timezone
-from django.db.models import Sum
 import json
 from django.db.models import Count
 import csv
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.conf import settings
-from django.contrib import messages
 from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 
@@ -40,8 +34,6 @@ def add_product_view(request: HttpRequest):
         form = ProductForm()
     return render(request, 'product/add_product.html', {'form': form})
 
-from datetime import datetime, timedelta
-from django.utils import timezone
 
 def update_product_view(request: HttpRequest, pk):
     if not (request.user.is_staff and request.user.has_perm("product.change_product")):
@@ -66,7 +58,6 @@ def update_product_view(request: HttpRequest, pk):
             product.save()
             messages.success(request, "Product updated successfully!")
             
-
             send_email = False
             expiry_date = None
 
@@ -97,7 +88,6 @@ def update_product_view(request: HttpRequest, pk):
     return render(request, 'product/update_product.html', {'form': form, 'product': product})
 
  
-
 def delete_product_view(request, pk):
     if not (request.user.is_staff and request.user.has_perm("product.delete_product")):
         messages.warning(request, "Only admins can delete products.", "alert-warning")
@@ -131,7 +121,7 @@ def products_list_view(request):
     if selected_status:
         products = products.filter(status=selected_status)
 
-    paginator = Paginator(products, 4)
+    paginator = Paginator(products, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -165,11 +155,12 @@ def suppliers_list_view(request):
     suppliers = Supplier.objects.all()
     if query:
         suppliers = suppliers.filter(
-            Q(name__icontains=query) | Q(email__icontains=query) | Q(phone__icontains=query)
-        )
-    paginator = Paginator(suppliers, 2) 
+            Q(name__icontains=query) | Q(email__icontains=query) | Q(phone__icontains=query))
+        
+    paginator = Paginator(suppliers, 5) 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+    
     context = {
         'suppliers': page_obj.object_list,
         'is_paginated': page_obj.has_other_pages(),
@@ -194,10 +185,12 @@ def add_supplier_view(request:HttpRequest):
         form = SupplierForm()
     return render(request, 'product/supplier_form.html', {'form': form})
 
+
 def supplier_detail_view(request:HttpRequest, pk):
     supplier = Supplier.objects.get(pk=pk)
     products = supplier.product_set.all()  
     return render(request, 'product/supplier_detail.html', {'supplier': supplier,'products': products,})
+
 
 def update_supplier_view(request:HttpRequest,pk):
     if not (request.user.is_staff and request.user.has_perm("product.change_supplier")):
@@ -227,13 +220,12 @@ def delete_supplier_view(request:HttpRequest, pk):
     return render(request, 'product/supplier_confirm_delete.html', {'supplier': supplier})
 
 
-
 def categories_list_view(request):
     query = request.GET.get('q', '')
     categories = Category.objects.all()
     if query:
         categories = categories.filter(Q(name__icontains=query) | Q(description__icontains=query))
-    paginator = Paginator(categories, 2) 
+    paginator = Paginator(categories, 3) 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {
@@ -317,21 +309,9 @@ def update_stock_view(request, product_id):
     
  
 def inventory_report_view(request):
-    category_id = request.GET.get('category')
-    supplier_id = request.GET.get('supplier')
-    status = request.GET.get('status')
 
     products = Product.objects.all().order_by('name')  
-
-    if category_id:
-        products = products.filter(category_id=category_id)
-    if supplier_id:
-        products = products.filter(supplier_id=supplier_id)
-    if status:
-        products = products.filter(status=status)
-
     today = timezone.now().date()
-
     total_products = products.count()
     available_count = products.filter(status='available').count()
     low_stock_count = products.filter(status='low_stock').count()
@@ -342,8 +322,13 @@ def inventory_report_view(request):
     categories = Category.objects.all()
     suppliers = Supplier.objects.all()
 
+
+    paginator = Paginator(products, 5) 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'products': products,
+        'products': page_obj,
         'total_products': total_products,
         'available_count': available_count,
         'low_stock_count': low_stock_count,
@@ -352,63 +337,16 @@ def inventory_report_view(request):
         'expired_count': expired_count,
         'categories': categories,
         'suppliers': suppliers,
-        'selected_category': category_id,
-        'selected_supplier': supplier_id,
-        'selected_status': status,
+        'is_paginated': page_obj.has_other_pages(),
+        'page_obj': page_obj,
+        'paginator': paginator,
+       
     }
     return render(request, 'product/inventory_report.html', context)
 
 
-def export_csv_view(request):
-    category_id = request.GET.get('category')
-    supplier_id = request.GET.get('supplier')
-    status = request.GET.get('status')
-
-    print(f"Received filters - category: {category_id}, supplier: {supplier_id}, status: {status}")
-
-    products = Product.objects.all()
-
-    if category_id and category_id.isdigit():
-        products = products.filter(category_id=int(category_id))
-
-    if supplier_id and supplier_id.isdigit():
-        products = products.filter(supplier_id=int(supplier_id))
-
-    if status:
-        products = products.filter(status=status)
-
-    products = products.order_by('name')
-
-    print(f"Filtered products count: {products.count()}")
-
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="inventory_report.csv"'
-
-    writer = csv.writer(response)
-    writer.writerow(['ID', 'Name', 'Category', 'Supplier', 'Status', 'Stock Quantity', 'Expiry Date', 'Price'])
-
-    for p in products:
-        writer.writerow([
-            p.id,
-            p.name,
-            p.category.name if p.category else '',
-            p.supplier.name if p.supplier else '',
-            p.status,
-            p.stock_quantity,
-            p.expiry_date.strftime('%Y-%m-%d') if p.expiry_date else '',
-            p.price,
-        ])
-
-    return response
-
 def supplier_report_view(request):
-    active = request.GET.get('active')
     suppliers = Supplier.objects.annotate(products_count=Count('product'))
-
-    if active == 'yes':
-        suppliers = suppliers.filter(products_count__gt=0)
-    elif active == 'no':
-        suppliers = suppliers.filter(products_count=0)
 
     today = timezone.now().date()
     products = Product.objects.all()
@@ -419,14 +357,20 @@ def supplier_report_view(request):
     discontinued_count = products.filter(status='discontinued').count()
     expired_count = products.filter(expiry_date__lt=today).count()
 
+    paginator = Paginator(suppliers, 2) 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'suppliers': suppliers,
-        'selected_active': active,
+        'suppliers': page_obj,
         'available_count': available_count,
         'low_stock_count': low_stock_count,
         'out_of_stock_count': out_of_stock_count,
         'discontinued_count': discontinued_count,
         'expired_count': expired_count,
+        'is_paginated': page_obj.has_other_pages(),
+        'page_obj': page_obj,
+        'paginator': paginator,
     }
     return render(request, 'product/supplier_report.html', context)
 
@@ -452,3 +396,39 @@ def send_alert_email(product_name, stock_quantity, expiry_date=None):
     )
     email_message.content_subtype = "html"
     email_message.send()
+
+
+
+def export_csv_view(request):
+    category_id = request.GET.get('category')
+    supplier_id = request.GET.get('supplier')
+    status = request.GET.get('status')
+
+    print(f"Received filters - category: {category_id}, supplier: {supplier_id}, status: {status}")
+
+    products = Product.objects.all()
+    if category_id and category_id.isdigit():
+        products = products.filter(category_id=int(category_id))
+
+    if supplier_id and supplier_id.isdigit():
+        products = products.filter(supplier_id=int(supplier_id))
+
+    if status:
+        products = products.filter(status=status)
+
+    products = products.order_by('name')
+    print(f"Filtered products count: {products.count()}")
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="inventory_report.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['ID', 'Name', 'Category', 'Supplier', 'Status', 'Stock Quantity', 'Expiry Date', 'Price'])
+
+    for p in products:
+        writer.writerow([p.id, p.name,p.category.name if p.category else '',p.supplier.name if p.supplier else '',p.status,p.stock_quantity,
+            p.expiry_date.strftime('%Y-%m-%d') if p.expiry_date else '',
+            p.price,
+        ])
+
+    return response

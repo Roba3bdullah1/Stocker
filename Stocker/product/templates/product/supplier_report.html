@@ -52,9 +52,6 @@
      class="btn btn-success">
     <i class="bi bi-file-earmark-arrow-down"></i> Export CSV
   </a>
-  <a href="{% url 'product:import_csv_view' %}" class="btn btn-primary">
-    <i class="bi bi-file-earmark-arrow-up"></i> Import CSV
-  </a>
 </div>
 
     <div class="table-responsive">
@@ -92,6 +89,39 @@
           {% endfor %}
         </tbody>
       </table>
+
+
+    {% if is_paginated %}
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    {% if page_obj.has_previous %}
+    <li class="page-item">
+      <a class="page-link text-secondary" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_supplier %}&supplier={{ selected_supplier }}{% endif %}">Previous</a>
+    </li>
+    {% else %}
+    <li class="page-item disabled"><span class="page-link text-secondary">Previous</span></li>
+    {% endif %}
+
+    {% for num in paginator.page_range %}
+      {% if page_obj.number == num %}
+        <li class="page-item active" aria-current="page"><span class="page-link bg-secondary text-white border border-secondary">{{ num }}</span></li>
+      {% else %}
+        <li class="page-item"><a class="page-link text-secondary" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_supplier %}&supplier={{ selected_supplier }}{% endif %}">{{ num }}</a></li>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+    <li class="page-item">
+      <a class="page-link text-secondary" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_supplier %}&supplier={{ selected_supplier }}{% endif %}">Next</a>
+    </li>
+    {% else %}
+    <li class="page-item disabled"><span class="page-link text-secondary">Next</span></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
+
     </div>
 
    

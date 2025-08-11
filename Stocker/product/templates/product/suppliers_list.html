@@ -65,8 +65,9 @@
     <h2 class="mb-4 ">Suppliers List</h2>
 
     <div class="mb-3 d-flex justify-content-between align-items-center">
-      <a href="{% url 'product:add_supplier_view' %}" class="btn btn-primary rounded-3">Add New Supplier</a>
-
+      {% if perms.product.add_supplier %}
+         <a href="{% url 'product:add_supplier_view' %}" class="btn btn-primary rounded-3">Add New Supplier</a>
+       {% endif %}
       <form method="GET" class="d-flex " role="search">
         <input
           class="form-control me-2 rounded-3"
@@ -94,7 +95,12 @@
     {% for supplier in suppliers %}
     <tr>
       <th scope="row">{{ forloop.counter }}</th>
-      <td>{{ supplier.name }}</td>
+     <td>
+  <a href="{% url 'product:supplier_detail_view' supplier.id %}" 
+     style="color: #5a2a83; text-decoration: none; font-weight: 500;">
+    {{ supplier.name }}
+  </a>
+</td>
       <td>
         <a href="mailto:{{ supplier.email }}" style="color: #5a2a83; text-decoration: none;">
   {{ supplier.email }}
@@ -102,16 +108,14 @@
       </td>
       <td>{{ supplier.phone }}</td>
       <td>
-        <a href="{% url 'product:supplier_detail_view' supplier.id %}" class="btn btn-sm me-1 p-1" title="Details">
-          <span class="material-symbols-outlined" style="color: rgb(66, 114, 202); font-size: 1.2rem; vertical-align: middle;">
-            info
-          </span>
-        </a>
+        {% if perms.product.change_supplier %}
         <a href="{% url 'product:update_supplier_view' supplier.id %}" class="btn btn-sm me-1 p-1" title="Edit">
           <span class="material-symbols-outlined" style="color: rgb(64, 41, 116); font-size: 1.2rem; vertical-align: middle;">
             edit_square
           </span>
         </a>
+        {% endif %}
+        {% if perms.product.delete_category %}
         <button
           type="button"
           class="btn btn-sm p-1 text-danger"
@@ -125,6 +129,7 @@
             delete
           </span>
         </button>
+        {% endif %}
       </td>
     </tr>
     {% empty %}

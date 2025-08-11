@@ -60,7 +60,7 @@
       {% if form.instance.pk %} Edit Category {% else %} Add New Category {% endif %}
     </h2>
 
-    <form method="POST" action="">
+    <form method="POST" enctype="multipart/form-data" action="">
       {% csrf_token %}
       {{ form.non_field_errors }}
 

@@ -59,7 +59,7 @@
           {% endif %}
         </div>
         <div class="col-md-8">
-          <div class="card-body">
+          <div class="card-body ">
             <h5 class="card-title">{{ supplier.name }}</h5>
             <p class="card-text"><strong>Email:</strong> <a href="mailto:{{ supplier.email }}">{{ supplier.email }}</a></p>
             <p class="card-text"><strong>Website:</strong> 
@@ -76,7 +76,7 @@
       </div>
     </div>
 
-   <h3>Products from this Supplier</h3>
+  <h3>Products from this Supplier ({{ products|length }})</h3>
 <div class="list-group mb-4">
   {% if products %}
     {% for product in products %}

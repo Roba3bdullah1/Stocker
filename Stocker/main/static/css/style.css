@@ -16,6 +16,17 @@ body {
   background-color: #f9fafb;
 }
 
+.card {
+    border-radius: 1rem;
+  }
+
+  .alert {
+    border-radius: 1rem;
+  }
+  
+  .table thead th {
+    vertical-align: middle;
+  }
 
 .sidebar {
   position: fixed;

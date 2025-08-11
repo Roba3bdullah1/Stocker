@@ -5,10 +5,21 @@
 
 {% block content %}
 <div class="d-flex justify-content-center align-items-center" style="min-height: 85vh; padding-top: 30px; padding-bottom: 50px;">
-
     <div class="card shadow p-4 w-100" style="max-width: 400px;">
         <h3 class="text-center mb-4">Login</h3>
-        <form method="POST" novalidate>
+
+        {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+                <div class="alert {{ message.tags }} text-center m-0" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'main:login_view' %}" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
             <div class="mb-3">
                 <label for="id_username" class="form-label">Username</label>
                 <input type="text" name="username" id="id_username" class="form-control" required>

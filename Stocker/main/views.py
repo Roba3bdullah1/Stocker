@@ -5,15 +5,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from product.models import Product, Category, Supplier
 from django.contrib.auth.forms import UserCreationForm
-from .forms import CustomUserCreationForm
 from django.utils.timezone import now
-from django.db.models import Q, F
 from datetime import timedelta
 from django.contrib.auth.models import User
 import json
-from django.core.mail import EmailMessage
-from django.template.loader import render_to_string
-from django.conf import settings
 from django.contrib import messages
 from django.db.models import Count
 from django.utils.timezone import now
@@ -69,17 +64,21 @@ def dashboard_view(request):
 
 def signup_view(request):
     if request.method == "POST":
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            if user.is_superuser:
-                login(request, user) 
-                return redirect('main:dashboard_view')
-            else:
-                return redirect('main:login_view')  
-    else:
-        form = CustomUserCreationForm()
-    return render(request, 'main/signup.html', {'form': form})
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        email = request.POST.get("email")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists","alert-danger")
+            return redirect('main:signup_view')
+
+        new_user = User.objects.create_user(username=username,password=password,email=email,first_name=first_name,last_name=last_name)
+        messages.success(request, "Registered User Successfully", "alert-success")
+        return redirect('main:login_view')
+           
+    return render(request, 'main/signup.html')
 
 def login_view(request):
     if request.method == 'POST':
@@ -97,7 +96,6 @@ def login_view(request):
 @login_required
 def logout_view(request):
     logout(request)
-    messages.success(request, "logged out successfully", "alert-warning")
     return redirect('main:home_view') 
 
 
